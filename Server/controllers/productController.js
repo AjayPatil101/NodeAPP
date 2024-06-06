@@ -1,11 +1,23 @@
-const Product = require('../models/product');
+const Product = require("../models/product");
 
 // Add a new product
 exports.addProduct = async (req, res) => {
   const { name, qty, rate } = req.body;
   try {
-    const product = await Product.create({ name, qty, rate, user: req.user._id });
-    res.status(201).json({ success: true, product });
+    const products = await Product.find({ name: name,user: req.user._id, });
+    if (products.length === 0) {
+      await Product.create({
+        name,
+        qty,
+        rate,
+        user: req.user._id,
+      });
+      res.status(201).json({ success: true, data:"New product has been added." });
+    } else {
+      res
+        .status(400)
+        .json({ success: false, message: "Enter a Unique Product Name" });
+    }
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
   }
@@ -33,7 +45,9 @@ exports.updateProduct = async (req, res) => {
     );
 
     if (!product) {
-      return res.status(404).json({ success: false, message: 'Product not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
     }
 
     res.status(200).json({ success: true, product });
@@ -46,13 +60,20 @@ exports.updateProduct = async (req, res) => {
 exports.deleteProduct = async (req, res) => {
   const { id } = req.params;
   try {
-    const product = await Product.findOneAndDelete({ _id: id, user: req.user._id });
+    const product = await Product.findOneAndDelete({
+      _id: id,
+      user: req.user._id,
+    });
 
     if (!product) {
-      return res.status(404).json({ success: false, message: 'Product not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
     }
 
-    res.status(200).json({ success: true, message: 'Product deleted successfully' });
+    res
+      .status(200)
+      .json({ success: true, message: "Product deleted successfully" });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

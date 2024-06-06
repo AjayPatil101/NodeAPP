@@ -20,6 +20,6 @@ router.put('/updateProduct/:id', jwtCheck.jwtCheck, productController.updateProd
 router.delete('/deleteProduct/:id', jwtCheck.jwtCheck, productController.deleteProduct);
 
 // Define your route handler
-router.get('/generate', jwtCheck.jwtCheck, pdfController.createPDF);
+router.get('/generate', jwtCheck.jwtCheck, pdfController.generate);
 
 module.exports = router;
