@@ -18,13 +18,15 @@ hb.registerHelper('subtract', function(a, b) {
 
 exports.generate = async (req, res) => {
   try {
+    // Retrieve user and product data
+    const user = await User.findById(req.user._id).lean();
     const products = await Product.find({ user: req.user._id }).lean();
 
-    if (products.length) {
-      throw new Error('products not found');
+    if (!user || !products.length) {
+      throw new Error('User or products not found');
     }
     // Generate the PDF and send it as a response
-    const pdfBuffer = await generatePdf(products);
+    const pdfBuffer = await generatePdf(user, products);
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename=invoice.pdf');
     res.send(pdfBuffer);
@@ -34,7 +36,7 @@ exports.generate = async (req, res) => {
   }
 };
 
-async function generatePdf(products) {
+async function generatePdf(user, products) {
   try {
     console.log("Loading template file in memory");
     const invoicePath = path.resolve(__dirname, 'invoice.hbs');
@@ -45,11 +47,12 @@ async function generatePdf(products) {
 
     console.log("Generating data");
     const data = {
+      date: new Date().toLocaleDateString(),
+      user: user,
       products: products,
       calculateTotal: (products) => products.reduce((total, product) => total + product.rate * product.qty, 0)
     };
     const html = template(data);
-
     console.log("Generating PDF");
     const browser = await puppeteer.launch({
       headless: true,
