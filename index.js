@@ -11,7 +11,7 @@ app.use(cors());
 connectDB();
 
 app.use(express.json());
-
+app.set('view engine', 'ejs');
 
 const authRoutes = require('./Server/routes/routes');
 app.use('/', authRoutes);
